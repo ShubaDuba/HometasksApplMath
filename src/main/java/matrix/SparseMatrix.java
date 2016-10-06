@@ -1,6 +1,7 @@
 package matrix;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -9,15 +10,28 @@ import java.util.Map;
 public class SparseMatrix implements iMatrix{
     SparseMatrix() {}
 
-    private class Key {
-        final int x;
-        final int y;
+    private int col;
+    private int row;
+
+    public int getCol() {
+        return col;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    protected class Key {
+        public int x;
+        public int y;
         public Key(int x, int y) { this.x = x; this.y = y; }
     }
 
-    private Map<Key, Integer> hashmap = new HashMap<Key, Integer>();
+    protected Map<Key, Integer> hashmap;
 
     public void add(int row, int col, int value) {
+        this.col = col;
+        this.row = row;
         hashmap.put(new Key(row, col), value);
     }
 
@@ -38,6 +52,19 @@ public class SparseMatrix implements iMatrix{
     }
 
     public DenseMatrix mult (DenseMatrix m) {
-        return new DenseMatrix(1, 2);
+        int result[][] = new int[row][m.data[0].length];
+
+        Iterator iter = hashmap.entrySet().iterator();
+        Key currentKey;
+        Map.Entry pair;
+        while (iter.hasNext()) {
+            pair = (Map.Entry)iter.next();
+            currentKey = (Key)pair.getKey();
+            for (int i = 0; i < m.data[currentKey.y].length; ++i) {
+                result[currentKey.x][i] += (int)pair.getValue() * m.data[currentKey.y][i];
+            }
+        }
+
+        return new DenseMatrix(result);
     }
 }

@@ -1,10 +1,13 @@
 package matrix;
 
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Created by andrew on 21.09.16.
  */
-public class DenseMatrix implements iMatrix{
-    private int[][] data;
+public class DenseMatrix implements iMatrix {
+    protected int[][] data;
 
     public DenseMatrix(int row, int col) {
         data = new int[row][col];
@@ -14,7 +17,7 @@ public class DenseMatrix implements iMatrix{
         this.data = data;
     }
 
-    public iMatrix mult(iMatrix m){
+    public iMatrix mult(iMatrix m) {
         if (m instanceof DenseMatrix) {
             return mult((DenseMatrix) m);
         } else if (m instanceof SparseMatrix) {
@@ -22,11 +25,34 @@ public class DenseMatrix implements iMatrix{
         } else return null;
     }
 
-    public DenseMatrix mult (SparseMatrix m) {
-        return this;
+    public DenseMatrix mult(SparseMatrix m) {
+        int row = data.length;
+        int col = data[0].length;
+
+        int result[][] = new int[data.length][m.getCol()];
+
+        int transM[][] = new int[col][row];
+        for (int i = 0; i < row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                transM[i][j] = data[j][i];
+            }
+        }
+
+        Iterator iter = m.hashmap.entrySet().iterator();
+        SparseMatrix.Key currentKey;
+        Map.Entry pair;
+        while (iter.hasNext()) {
+            pair = (Map.Entry)iter.next();
+            currentKey = (SparseMatrix.Key)pair.getKey();
+            for (int i = 0; i < transM[currentKey.x].length; ++i) {
+                result[i][currentKey.y] += (int)pair.getValue() * transM[currentKey.x][i];
+            }
+        }
+
+        return new DenseMatrix(result);
     }
 
-    public DenseMatrix mult (DenseMatrix m) {
+    public DenseMatrix mult(DenseMatrix m) {
         int row1 = data.length;
         int col1 = data[0].length;
         int row2 = m.data.length;
