@@ -1,7 +1,7 @@
 package matrix;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.io.File;
+import java.util.Scanner;
 
 /**
  * Created by andrew on 21.09.16.
@@ -17,42 +17,59 @@ public class DenseMatrix implements iMatrix {
         this.data = data;
     }
 
-    public iMatrix mult(iMatrix m) {
+    public DenseMatrix(String fileName) {
+        File file = null;
+        Scanner input = null;
+        int [][] result = {};
+        int currentLine = 0;
+        String[] line = {};
+        try {
+            file = new File(fileName);
+            input = new Scanner(file);
+            if (input.hasNextLine()) {
+                line = input.nextLine().split(" ");
+                result = new int[line.length][line.length];
+                for (int i = 0; i < line.length; ++i) {
+                    result[currentLine][i] = Integer.parseInt(line[i]);
+                }
+
+                ++currentLine;
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        try {
+            while (input.hasNextLine()) {
+                line = input.nextLine().split(" ");
+                for (int i = 0; i < line.length; ++i) {
+                    result[currentLine][i] = Integer.parseInt(line[i]);
+                }
+
+                ++currentLine;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        data = result;
+    }
+
+    public iMatrix mul(iMatrix m) {
         if (m instanceof DenseMatrix) {
-            return mult((DenseMatrix) m);
+            return mul((DenseMatrix) m);
         } else if (m instanceof SparseMatrix) {
             return this;
         } else return null;
     }
 
-    public DenseMatrix mult(SparseMatrix m) {
-        int row = data.length;
-        int col = data[0].length;
-
-        int result[][] = new int[data.length][m.getCol()];
-
-        int transM[][] = new int[col][row];
-        for (int i = 0; i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                transM[i][j] = data[j][i];
-            }
-        }
-
-        Iterator iter = m.hashmap.entrySet().iterator();
-        SparseMatrix.Key currentKey;
-        Map.Entry pair;
-        while (iter.hasNext()) {
-            pair = (Map.Entry)iter.next();
-            currentKey = (SparseMatrix.Key)pair.getKey();
-            for (int i = 0; i < transM[currentKey.x].length; ++i) {
-                result[i][currentKey.y] += (int)pair.getValue() * transM[currentKey.x][i];
-            }
-        }
-
-        return new DenseMatrix(result);
+    // mock
+    public DenseMatrix mul(SparseMatrix m) {
+        return new DenseMatrix(1, 2);
     }
 
-    public DenseMatrix mult(DenseMatrix m) {
+    public DenseMatrix mul(DenseMatrix m) {
         int row1 = data.length;
         int col1 = data[0].length;
         int row2 = m.data.length;
@@ -73,7 +90,7 @@ public class DenseMatrix implements iMatrix {
                     sum += data[i][k] * transM[j][k];
                 }
 
-                result[row1][col2] = sum;
+                result[i][j] = sum;
             }
         }
 

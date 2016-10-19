@@ -18,9 +18,9 @@
         <processorPath useClasspath="true" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="java-template_main" target="1.7" />
-      <module name="java-template_test" target="1.7" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="java-template_main" target="1.8" />
+      <module name="java-template_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
