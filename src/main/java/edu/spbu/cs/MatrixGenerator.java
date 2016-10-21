@@ -50,11 +50,10 @@ public class MatrixGenerator
     private static void testPerformance()
     {
         // Uncomment the code to Test your library
-        iMatrix r;
         System.out.println("Starting loading dense matrices");
-        iMatrix m1 = new DenseMatrix(MATRIX1_NAME);
+        IMatrix m1 = new DenseMatrix(MATRIX1_NAME);
         System.out.println("1 loaded");
-        iMatrix m2 = new DenseMatrix(MATRIX2_NAME);
+        IMatrix m2 = new DenseMatrix(MATRIX2_NAME);
         System.out.println("2 loaded");
         long start = System.currentTimeMillis();
         m1.mul(m2);
@@ -64,8 +63,9 @@ public class MatrixGenerator
         System.out.println("1 loaded");
         m2 = new SparseMatrix(MATRIX2_NAME);
         System.out.println("2 loaded");
+
         start = System.currentTimeMillis();
-        r = m1.mul(m2);
+        m1.mul(m2);
         System.out.println("Sparse Matrix time: " +(System.currentTimeMillis() - start));
 
     }
