@@ -9,7 +9,7 @@ import java.io.File;
  */
 public class SparseMatrix implements IMatrix {
     protected int size;
-    protected long[] values;
+    protected double[] values;
     protected int[] cols;
     protected int[] pointer;
 
@@ -25,13 +25,20 @@ public class SparseMatrix implements IMatrix {
         return result;
     }
 
-    private long[] toLongArray(ArrayList<Integer> a) {
-        long[] result = new long[a.size()];
+    private double[] toDoubleArray(ArrayList<Integer> a) {
+        double[] result = new double[a.size()];
         for (int i = 0; i < result.length; ++i) {
             result[i] = a.get(i);
         }
 
         return result;
+    }
+
+    public SparseMatrix(double[] values, int[] cols, int[] pointer) {
+        this.values = values;
+        this.cols = cols;
+        this.pointer = pointer;
+        this.size = pointer.length - 1;
     }
 
     public SparseMatrix(String fileName) {
@@ -60,7 +67,7 @@ public class SparseMatrix implements IMatrix {
                 p.add(currentLine);
             }
 
-            values = this.toLongArray(a);
+            values = this.toDoubleArray(a);
             cols = this.toIntArray(c);
             pointer = this.toIntArray(p);
             size = line.length;
@@ -77,13 +84,21 @@ public class SparseMatrix implements IMatrix {
         } else return null;
     }
 
+    public SparseMatrix mul (SparseMatrix m) {
+        int rValuesCounter = 0;
+        int arrayLengthCounter = values.length;
+        double rValues[] = new double[arrayLengthCounter];
+        int rCols[] = new int[arrayLengthCounter];
+        int rPointer[] = new int[size + 1];
 
-    public DenseMatrix mul (SparseMatrix m) {
-        long[][] result = new long[size][m.size];
         SparseMatrix mT = m.transposed();
-        long[] tmp = new long[size];
-        int sum = 0;
+
+        double[] tmp = new double[size];
+        double sum = 0;
+        int[] tmpCols;
+        double[] tmpValues;
         for (int i = 0; i < pointer.length - 1; ++i) {
+            rPointer[i] = rValuesCounter;
             for (int j = pointer[i]; j < pointer[i + 1]; ++j) {
                 tmp[cols[j]] = values[j];
             }
@@ -94,7 +109,20 @@ public class SparseMatrix implements IMatrix {
                     sum += mT.values[l] * tmp[mT.cols[l]];
                 }
 
-                result[i][n] = sum;
+                if (sum != 0) {
+                    if (rValuesCounter == arrayLengthCounter) {
+                        arrayLengthCounter *= 1.3;
+                        tmpValues = new double[arrayLengthCounter];
+                        tmpCols = new int[arrayLengthCounter];
+                        System.arraycopy(rValues, 0, tmpValues, 0, rValues.length);
+                        System.arraycopy(rCols, 0, tmpCols, 0, rCols.length);
+                        rValues = tmpValues;
+                        rCols = tmpCols;
+                    }
+
+                    rValues[rValuesCounter] = sum;
+                    rCols[rValuesCounter++] = n;
+                }
             }
 
             for (int k = 0; k < size; ++k) {
@@ -102,23 +130,34 @@ public class SparseMatrix implements IMatrix {
             }
         }
 
-        return new DenseMatrix(result);
+        if (rValuesCounter < arrayLengthCounter) {
+            tmpValues = new double[rValuesCounter];
+            tmpCols = new int[rValuesCounter];
+            System.arraycopy(rValues, 0, tmpValues, 0, tmpValues.length);
+            System.arraycopy(rCols, 0, tmpCols, 0, tmpCols.length);
+            rValues = tmpValues;
+            rCols = tmpCols;
+        }
+
+        rPointer[size] = rValues.length;
+
+        return new SparseMatrix(rValues, rCols, rPointer);
     }
 
     public DenseMatrix mul(DenseMatrix m) {
-        long[][] result = new long[size][size];
+        double[][] result = new double[size][size];
         int row2 = m.data.length;
         int col2 = m.data[0].length;
 
-        long mT[][] = new long[col2][row2];
+        double mT[][] = new double[col2][row2];
         for (int i = 0; i < row2; ++i) {
             for (int j = 0; j < col2; ++j) {
                 mT[i][j] = m.data[j][i];
             }
         }
 
-        int sum = 0;
-        long[] tmp = new long[size];
+        double sum = 0;
+        double[] tmp = new double[size];
 
         for (int i = 0; i < pointer.length - 1; ++i) {
             for (int j = pointer[i]; j < pointer[i + 1]; ++j) {
@@ -144,10 +183,10 @@ public class SparseMatrix implements IMatrix {
 
     public SparseMatrix transposed() {
         class Pair {
-            long value;
+            double value;
             int row;
 
-            public Pair(long value, int row) {
+            public Pair(double value, int row) {
                 this.value = value;
                 this.row = row;
             }
@@ -168,7 +207,7 @@ public class SparseMatrix implements IMatrix {
             }
         }
 
-        result.values = new long[values.length];
+        result.values = new double[values.length];
         result.cols = new int[cols.length];
         int current = 0;
         int colSize = 0;
@@ -193,12 +232,13 @@ public class SparseMatrix implements IMatrix {
         return size;
     }
 
+    public double[] getValues() { return values; }
+
     public void toFile(String filename) {
         try {
             PrintWriter writer = new PrintWriter(filename);
 
-            long[] tmp = new long[size];
-            int sum = 0;
+            double[] tmp = new double[size];
             for (int i = 0; i < pointer.length - 1; ++i) {
                 for (int j = pointer[i]; j < pointer[i + 1]; ++j) {
                     tmp[cols[j]] = values[j];

@@ -8,20 +8,20 @@ import java.util.Scanner;
  * Created by andrew on 21.09.16.
  */
 public class DenseMatrix implements IMatrix {
-    protected long[][] data;
+    protected double[][] data;
 
     public DenseMatrix(int row, int col) {
-        data = new long[row][col];
+        data = new double[row][col];
     }
 
-    public DenseMatrix(long[][] data) {
+    public DenseMatrix(double[][] data) {
         this.data = data;
     }
 
     public DenseMatrix(String fileName) {
         File file = null;
         Scanner input = null;
-        long [][] result = {};
+        double [][] result = {};
         int currentLine = 0;
         String[] line = {};
         try {
@@ -29,7 +29,7 @@ public class DenseMatrix implements IMatrix {
             input = new Scanner(file);
             if (input.hasNextLine()) {
                 line = input.nextLine().split(" ");
-                result = new long[line.length][line.length];
+                result = new double[line.length][line.length];
                 for (int i = 0; i < line.length; ++i) {
                     result[currentLine][i] = Integer.parseInt(line[i]);
                 }
@@ -68,8 +68,8 @@ public class DenseMatrix implements IMatrix {
 
     public DenseMatrix mul(SparseMatrix m) {
         int size = data.length;
-        long result[][] = new long[size][size];
-        int sum = 0;
+        double result[][] = new double[size][size];
+        double sum = 0;
 
         SparseMatrix mT = m.transposed();
 
@@ -93,17 +93,17 @@ public class DenseMatrix implements IMatrix {
         int row2 = m.data.length;
         int col2 = m.data[0].length;
 
-        long mT[][] = new long[col2][row2];
+        double mT[][] = new double[col2][row2];
         for (int i = 0; i < row2; ++i) {
             for (int j = 0; j < col2; ++j) {
                 mT[i][j] = m.data[j][i];
             }
         }
 
-        long result[][] = new long[row1][col2];
+        double result[][] = new double[row1][col2];
         for (int i = 0; i < row1; ++i) {
             for (int j = 0; j < col2; ++j) {
-                int sum = 0;
+                double sum = 0;
                 for (int k = 0; k < col1; ++k) {
                     sum += data[i][k] * mT[j][k];
                 }
@@ -115,7 +115,7 @@ public class DenseMatrix implements IMatrix {
         return new DenseMatrix(result);
     }
 
-    public long[][] getData() {
+    public double[][] getData() {
         return data;
     }
 
